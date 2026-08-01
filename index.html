@@ -222,7 +222,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+    getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, doc, setDoc, deleteDoc, updateDoc,
@@ -299,8 +299,15 @@
   // ---------- Auth ----------
   signInBtn.addEventListener("click", async () => {
     loginError.textContent = "";
-    try { await signInWithPopup(auth, provider); }
+    try { await signInWithRedirect(auth, provider); }
     catch (err) { loginError.textContent = "Sign-in failed: " + err.message; }
+  });
+
+  // Catch any error from the redirect flow itself (e.g. unauthorized domain)
+  getRedirectResult(auth).catch((err) => {
+    if (err && err.code) {
+      loginError.textContent = "Sign-in failed: " + err.message;
+    }
   });
   signOutBtn.addEventListener("click", () => signOut(auth));
   blockedSignOutBtn.addEventListener("click", () => signOut(auth));

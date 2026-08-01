@@ -528,7 +528,7 @@
     if (unsubMessages) unsubMessages();
     const pathParts = messagesCollectionPath();
     const colRef = collection(db, ...pathParts);
-    const q = query(colRef, orderBy("createdAt", "asc"), limit(200));
+    const q = query(colRef, orderBy("createdAtMs", "asc"), limit(200));
     unsubMessages = onSnapshot(q, (snap) => {
       messagesEl.innerHTML = "";
       if (snap.empty) {
@@ -541,8 +541,8 @@
         const canDelete = isAdmin || isMine;
         const div = document.createElement("div");
         div.className = "msg" + (isMine ? " mine" : "");
-        const time = m.createdAt && m.createdAt.toDate
-          ? m.createdAt.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        const time = m.createdAtMs
+          ? new Date(m.createdAtMs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           : "";
         div.innerHTML = `
           <img src="${m.photoURL || ''}" alt="">
@@ -579,7 +579,8 @@
       uid: currentUser.uid,
       name: currentUser.displayName || "Anonymous",
       photoURL: currentUser.photoURL || "",
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      createdAtMs: Date.now()
     };
     try {
       if (currentView.type === "general") {

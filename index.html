@@ -567,6 +567,9 @@
         messagesEl.appendChild(div);
       });
       messagesEl.scrollTop = messagesEl.scrollHeight;
+    }, (err) => {
+      console.error("Message listener error:", err);
+      alert("Couldn't load messages.\n\nError: " + (err.code || err.message || "unknown error"));
     });
   }
 
@@ -597,6 +600,7 @@
       }
     } catch (err) {
       console.error("Failed to send:", err);
+      alert("Message failed to send.\n\nError: " + (err.code || err.message || "unknown error"));
     }
   }
 

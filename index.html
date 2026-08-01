@@ -222,7 +222,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
+    getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, doc, setDoc, deleteDoc, updateDoc,
@@ -299,11 +299,26 @@
   // ---------- Auth ----------
   signInBtn.addEventListener("click", async () => {
     loginError.textContent = "";
-    try { await signInWithRedirect(auth, provider); }
-    catch (err) { loginError.textContent = "Sign-in failed: " + err.message; }
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      // If the popup was blocked, closed, or unsupported, fall back to redirect
+      const fallbackCodes = [
+        "auth/popup-blocked",
+        "auth/popup-closed-by-user",
+        "auth/cancelled-popup-request",
+        "auth/operation-not-supported-in-this-environment"
+      ];
+      if (err && fallbackCodes.includes(err.code)) {
+        try { await signInWithRedirect(auth, provider); }
+        catch (err2) { loginError.textContent = "Sign-in failed: " + err2.message; }
+      } else {
+        loginError.textContent = "Sign-in failed: " + (err.message || err.code || "unknown error");
+      }
+    }
   });
 
-  // Catch any error from the redirect flow itself (e.g. unauthorized domain)
+  // Catch any error from a redirect flow that may have run (e.g. unauthorized domain)
   getRedirectResult(auth).catch((err) => {
     if (err && err.code) {
       loginError.textContent = "Sign-in failed: " + err.message;
